@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+
+{% block javascript %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script>
+        let form = document.getElementById('redirect'); // selecting the form
+        
+        console.log("added listener")
+        form.addEventListener('submit', function (event) { // 1
+            event.preventDefault()
+            let data = new FormData(); // 2
+
+            data.append("title", "{'helo': 'hi there'}")
+            data.append("csrfmiddlewaretoken", '{{csrf_token}}')
+
+            axios.post('/schemas/redirect/', data) // 4
+                .then(res => window.location = "/schemas/schema-list/") // 5
+                .catch(errors => console.log(errors)) // 6
+
+        })
+
+    </script>
+{% endblock javascript %}
+    
+
+{% block content %}
+<div >
+    <h3>New Schema</h3>
+        <form action="{% url 'schemas:schema-create' %}" method="post">
+            {% csrf_token %}
+            <div class="d-flex flex-column">
+                <input type="hidden" name="schema_id" value="{{schema_id}}">
+                {% for field in schema_form %}
+                <div class="d-flex flex-column">
+                    <div class="m-1">
+                        {{field.label}}
+                    </div>
+                    <div class="m-1">
+                        {{field}}
+                    </div>
+        
+        
+                    {% if field.help_text %}
+                    <p class="help">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <div class="w-50 d-flex justify-content-center mt-4">
+                <input type="Submit" class="btn btn-primary" value="Submit" >
+                </div>
+            </div>
+        </form>
+    
+    
+    
+        <h3>Schema columns</h3>
+        <div class="d-flex flex-row">
+            <input type="hidden" name="schema_id" value="{{schema_id}}">
+            {% for field in column_form %}
+            <div class="d-flex flex-column">
+                <div class="m-1">
+                    {{field.label}}
+                </div>
+                <div class="m-1">
+                    {{field}}
+                </div>
+    
+    
+                {% if field.help_text %}
+                <p class="help">{{ field.help_text|safe }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+    
+            <input type="Submit" class="btn btn-primary" value="Submit">
+        </div>
+        
+    
+</div>
+
+
+{% endblock content %}
+    

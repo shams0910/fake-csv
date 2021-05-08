@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="d-flex flex-column m-3 mx-5">
+    <div class="d-flex flex-row justify-content-between my-3">
+        <h4>Data schemas</h4>
+        <a href="{% url 'schemas:schema-create' %}" class="btn btn-success">Create Schema</a>
+    </div>
+    <div>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Modified</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                {% for schema in schemas %}
+                    <tr>
+                        <th scope="row">{{schema.id}}</th>
+                        <td>{{schema.name}}</td>
+                        <td>{{schema.modified_date}}</td>
+                        <td class="d-flex flex-row">
+                            <form action="{% url 'schemas:schema-edit' id=schema.id %}" method="get">
+                                <input type="submit" class="btn btn-link text-decoration-none" value="Edit schema">
+                            </form>
+                            <form action="{% url 'schemas:schema-delete' id=schema.id %}" method="get">
+                                <input type="submit" class="btn btn-link text-danger text-decoration-none" value="Delete">
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}
+    
