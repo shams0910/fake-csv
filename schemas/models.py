@@ -1,8 +1,9 @@
 from django.db import models
 from accounts.models import User
-
+from .utils import user_directory_path
 
 # Create your models here.
+
 
 class Schema(models.Model):
     SEPARATOR_CHOICES = (
@@ -42,8 +43,9 @@ class SchemaColumn(models.Model):
     )
     name = models.CharField(max_length=30, verbose_name="Column name")
     type = models.CharField(choices=TYPE_CHOICES, max_length=20)
-    range_to = models.IntegerField(null=True, verbose_name='To')
-    range_from = models.IntegerField(null=True, verbose_name='From')
+    range_to = models.IntegerField(null=True, verbose_name='To', blank=True)
+    range_from = models.IntegerField(
+        null=True, verbose_name='From', blank=True)
     order = models.IntegerField()
     schema = models.ForeignKey(Schema, on_delete=models.CASCADE, blank=True)
 
@@ -51,4 +53,4 @@ class SchemaColumn(models.Model):
 class Dataset(models.Model):
     schema = models.ForeignKey(Schema, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
-    file = models.FileField()
+    file = models.FileField(upload_to=user_directory_path)

@@ -25,7 +25,7 @@
                         <td>{{schema.name}}</td>
                         <td>{{schema.modified_date}}</td>
                         <td class="d-flex flex-row">
-                            <form action="{% url 'schemas:schema-edit' id=schema.id %}" method="get">
+                            <form action="{% url 'schemas:schema-datasets' id=schema.id %}" method="get">
                                 <input type="submit" class="btn btn-link text-decoration-none" value="Edit schema">
                             </form>
                             <form action="{% url 'schemas:schema-delete' id=schema.id %}" method="get">

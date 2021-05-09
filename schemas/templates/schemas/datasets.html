@@ -2,6 +2,59 @@
 
 
 {% block content %}
-    <h2>Datesets</h2>
+<div class="d-flex flex-column mx-4 mt-4" style="max-width: 1000px;">
+    <div class="d-flex flex-row m-2 justify-content-between">
+        <h2 >Datasets</h2>
+        <form action="{% url 'schemas:generate-dataset' %}" method="post" >
+            <div class="d-flex flex-row">
+                {% csrf_token %}
+                <input type="hidden" name="schema_id" value="{{schema_id}}">
+                <input type="number" name="row_amount" required class="p-1 rounded" style="width:100px">
+                <input type="submit" class="btn btn-success ms-2" value="Generate Data">
+            </div>
+        </form>
+    </div>
+    <div class="m-2">
+        <table class="table bordered">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Created</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                {% for dataset in datasets %}
+                    <tr>
+                        <th scope="row">{{dataset.id}}</th>
+                        <td>{{dataset.date}}</td>
+                        
+                        {% if dataset.file %}
+                            <td class="text-success">
+                                <span class="badge bg-success">Ready</span>
+                            </td>
+                            <td><a href="{{dataset.file.url}}" class="text-success">Download</a></td>
+                        {% else %}
+                            <td class="text-secondary">
+                                <span class="badge bg-secondary p-2">Processing</span>
+                            </td>
+                            <td></td>
+                        {% endif %}
+                            
+                        
+                    </tr>
+                {% endfor %}
+                    
+                
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+    
+    
+        
 {% endblock content %}
     

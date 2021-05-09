@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from .forms import CreateSchemaForm, CreateSchemaColumnForm
 from .models import Schema, SchemaColumn, Dataset
+from schemas.tasks import generate_dataset_task
 
 
 # Create your views here.
@@ -48,10 +49,10 @@ class SchemaCreateView(LoginRequiredMixin, View):
         return render(request, 'schemas/schema_create.html', context)
 
 
-class SchemaEditView(View):
+class SchemaDatasetsView(View):
     def get(self, request, id):
         datasets = Dataset.objects.filter(schema_id=id)
-        return render(request, 'schemas/datasets.html', {'datasets': datasets})
+        return render(request, 'schemas/datasets.html', {'datasets': datasets, 'schema_id': id})
 
 
 class SchemaDeleteView(View):
@@ -61,7 +62,16 @@ class SchemaDeleteView(View):
         return redirect('schemas:schema-list')
 
 
-# class ColumnCreateView(View):
-#     def post(self, request):
-#         column_form = CreateSchemaColumnForm(request.POST)
-#         if column_form.is_valid():
+class GenerateDataSetView(View):
+    def post(self, request):
+        # get params
+        schema_id = request.POST.get('schema_id')
+        row_amount = request.POST.get('row_amount')
+
+        # create dataset instance
+        dataset = Dataset.objects.create(schema_id=schema_id)
+
+        # queue the task
+        generate_dataset_task.delay(dataset.id, row_amount)
+
+        return redirect(f'/schemas/schema-datasets/{schema_id}/')

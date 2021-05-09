@@ -4,78 +4,166 @@
 {% block javascript %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <script>
-        let form = document.getElementById('redirect'); // selecting the form
+        let added_columns_div = document.getElementById('added-columns')
+        let order = 0
+        let new_column_div = document.getElementById('new-column')
+        // new_column_div.chlidren
+        let allColumnsData = []
+
+        function removeColumn(el) {
+            var element = el.parentNode.parentNode;
+            if (element.id != 'new-column') {
+                element.remove()
+            }
+        }
+  
+        function atTypeChange(typeElement){
+            var grandParentElement = typeElement.parentNode.parentNode;
+            console.log(grandParentElement.children[2]);
+            wrapperOfToInput = grandParentElement.children[2]
+            wrapperOfFromInput = grandParentElement.children[3]
+            
+            if (typeElement.value == 'text' || typeElement.value == 'integer'){
+                wrapperOfToInput.style.visibility = "visible"
+                wrapperOfFromInput.style.visibility = "visible"
+            }
+            else{
+                wrapperOfToInput.style.visibility = "hidden"
+                wrapperOfFromInput.style.visibility = "hidden"
+            }
+        }
         
-        console.log("added listener")
-        form.addEventListener('submit', function (event) { // 1
-            event.preventDefault()
-            let data = new FormData(); // 2
 
-            data.append("title", "{'helo': 'hi there'}")
-            data.append("csrfmiddlewaretoken", '{{csrf_token}}')
+        function addColumn(event){
+            column_div_to_add = new_column_div.cloneNode(true)
+            column_div_to_add.id = `column_${order}`
+            added_columns_div.appendChild(column_div_to_add)
+            order++
+        }
 
-            axios.post('/schemas/redirect/', data) // 4
-                .then(res => window.location = "/schemas/schema-list/") // 5
-                .catch(errors => console.log(errors)) // 6
+        // function validateInput(input_element, type){
+        //     if (type == 'text')
+        //     if (input_element.name == 'from' || input_element.name == 'to'){
+        //         return True
+        //     }
+        // }
 
-        })
+
+        function getDataFromColumns(){
+            added_columns = added_columns_div.children
+            console.log(added_columns);
+            for (let added_column of added_columns){
+                let columnData = {}
+                console.log(added_column)
+                for (let element of added_column.children){
+                    // adds each input data to columnData
+                    input = element.children[0]
+                    valueOfInput = input.value
+
+                    // if (valueOfInput == undefined || input.name == 'range_from' || input.name == 'range_to'){
+                    //     // checking whether it is input or not
+                    //     continue
+                    // }
+
+                    if (valueOfInput == ""){
+                        alert("Please fill all inputs")
+                        
+                    }
+
+                    else {
+                        columnData[`${input.name}`] = valueOfInput
+                    }
+                }
+                // adding each column data to overall data of all columns
+                let columnObject = {}
+                columnObject[`${added_column.id}`] = columnData
+                allColumnsData.push(columnObject)
+            }
+            console.log(allColumnsData);
+        }
+
+        function getSchemaData(){
+            schema_data = {}
+            let new_schema_div = document.getElementById('new-schema')
+            let input_wrappers = new_schema_div.children
+            for (let wrapper of input_wrappers){
+                input = wrapper.children[0]
+                schema_data[`${input.name}`] = input.value
+            }
+            console.log(schema_data);
+        }
+        
+        function submit(){
+            getSchemaData()
+            // getDataFromColumns()
+        }
+       
+
+        // let form = document.getElementById('redirect'); // selecting the form
+        
+        // console.log("added listener")
+        // form.addEventListener('submit', function (event) { // 1
+        //     event.preventDefault()
+        //     let data = new FormData(); // 2
+
+        //     data.append("title", "{'helo': 'hi there'}")
+        //     data.append("csrfmiddlewaretoken", '{{csrf_token}}')
+
+        //     axios.post('/schemas/redirect/', data) // 4
+        //         .then(res => window.location = "/schemas/schema-list/") // 5
+        //         .catch(errors => console.log(errors)) // 6
+
+        // })
 
     </script>
 {% endblock javascript %}
     
 
 {% block content %}
-<div >
-    <h3>New Schema</h3>
-        <form action="{% url 'schemas:schema-create' %}" method="post">
-            {% csrf_token %}
-            <div class="d-flex flex-column">
-                <input type="hidden" name="schema_id" value="{{schema_id}}">
-                {% for field in schema_form %}
-                <div class="d-flex flex-column">
-                    <div class="m-1">
+<div class="d-flex flex-column m-5">
+
+    <!-- title block -->
+    <div class="d-flex flex-row justify-content-between">
+        <h3>New schema</h3>
+        <button class="btn btn-primary" onclick="submit()">Submit</button>
+    </div>
+
+    <!-- schema block -->
+    <div class="d-flex flex-column" id="new-schema">
+        
+        {% for field in schema_form %}
+        <div class="my-2">
+            {{field.label}}
+            {{field}}
+        </div>
+        {% endfor %}
+            
+    </div>
+
+    <!-- column blocks -->
+    <h3 class="mt-4 mb-4">Schema columns</h3>
+    <div class="d-flex flex-column">
+        <div id="added-columns">
+
+        </div>
+
+        <div class="d-flex flex-column border" >
+            <div class="d-flex flex-row m-2" id="new-column">
+                {% for field in column_form %}
+                    <div class="d-flex flex-column m-2">
                         {{field.label}}
-                    </div>
-                    <div class="m-1">
                         {{field}}
                     </div>
-        
-        
-                    {% if field.help_text %}
-                    <p class="help">{{ field.help_text|safe }}</p>
-                    {% endif %}
-                </div>
                 {% endfor %}
-                <div class="w-50 d-flex justify-content-center mt-4">
-                <input type="Submit" class="btn btn-primary" value="Submit" >
+                <div class="d-flex align-items-center ms-2" >
+                    <span data="delete-parent" class="text-danger" onclick="removeColumn(this)">Delete</span>
                 </div>
             </div>
-        </form>
-    
-    
-    
-        <h3>Schema columns</h3>
-        <div class="d-flex flex-row">
-            <input type="hidden" name="schema_id" value="{{schema_id}}">
-            {% for field in column_form %}
-            <div class="d-flex flex-column">
-                <div class="m-1">
-                    {{field.label}}
-                </div>
-                <div class="m-1">
-                    {{field}}
-                </div>
-    
-    
-                {% if field.help_text %}
-                <p class="help">{{ field.help_text|safe }}</p>
-                {% endif %}
+            <div class="ms-3 mb-3">
+                <button id="add-column-button" class="btn btn-primary" onclick="addColumn()">Add column</button>
             </div>
-            {% endfor %}
-    
-            <input type="Submit" class="btn btn-primary" value="Submit">
         </div>
-        
+    </div>
     
 </div>
 

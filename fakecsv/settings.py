@@ -131,7 +131,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static')
+    os.path.join(BASE_DIR, 'static'),
 )
 # STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
@@ -146,3 +146,8 @@ MEDIA_ROOT = (
 
 # Configure Django App for Heroku.
 # django_heroku.settings(locals())
+
+
+# Celery configs
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
