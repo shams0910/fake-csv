@@ -4,15 +4,17 @@ from schemas.utils import generate_rows, get_writer_params
 import csv
 from io import StringIO
 from django.core.files.base import ContentFile
+from time import sleep
 
 
 @shared_task
 def generate_dataset_task(dataset_id, row_amount):
+    sleep(1)  # added sleep in order to see celery working
     dataset_instance = Dataset.objects.get(id=dataset_id)
     schema_id = dataset_instance.schema_id
-
+    sleep(1)
     schema_instance = Schema.objects.get(id=schema_id)
-
+    sleep(2)
     columns = SchemaColumn.objects.filter(
         schema_id=schema_id).values()
 
