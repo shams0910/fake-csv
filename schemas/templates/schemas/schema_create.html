@@ -8,7 +8,6 @@
         let order = 0
         let new_column_div = document.getElementById('new-column')
         // new_column_div.chlidren
-        let allColumnsData = []
 
         function removeColumn(el) {
             var element = el.parentNode.parentNode;
@@ -41,15 +40,8 @@
             order++
         }
 
-        // function validateInput(input_element, type){
-        //     if (type == 'text')
-        //     if (input_element.name == 'from' || input_element.name == 'to'){
-        //         return True
-        //     }
-        // }
-
-
         function getDataFromColumns(){
+            let allColumnsData = []
             added_columns = added_columns_div.children
             console.log(added_columns);
             for (let added_column of added_columns){
@@ -60,14 +52,14 @@
                     input = element.children[0]
                     valueOfInput = input.value
 
-                    // if (valueOfInput == undefined || input.name == 'range_from' || input.name == 'range_to'){
-                    //     // checking whether it is input or not
-                    //     continue
-                    // }
+                    if (valueOfInput == undefined || input.name == 'range_from' || input.name == 'range_to'){
+                        // checking whether it is input or not
+                        continue
+                    }
 
                     if (valueOfInput == ""){
-                        alert("Please fill all inputs")
-                        
+                        alert("Please fill all column forms")
+                        return false
                     }
 
                     else {
@@ -75,11 +67,11 @@
                     }
                 }
                 // adding each column data to overall data of all columns
-                let columnObject = {}
-                columnObject[`${added_column.id}`] = columnData
-                allColumnsData.push(columnObject)
+                console.log(columnData);
+                allColumnsData.push(columnData)
             }
             console.log(allColumnsData);
+            return allColumnsData
         }
 
         function getSchemaData(){
@@ -88,32 +80,38 @@
             let input_wrappers = new_schema_div.children
             for (let wrapper of input_wrappers){
                 input = wrapper.children[0]
+                if (input.value == ''){
+                    alert("Please fill up the schema form")
+                    return false
+                }
                 schema_data[`${input.name}`] = input.value
             }
-            console.log(schema_data);
+            return schema_data
         }
         
         function submit(){
-            getSchemaData()
-            // getDataFromColumns()
+            // let schema_object = getSchemaData()
+            let columns = getDataFromColumns()
+
+            if (!schema_object || !columns) {
+                return
+            }
+
+            var data = {}
+            data['schema'] = schema_object
+            data['columns'] = columns
+           
+            data = JSON.stringify(data)
+
+            let form_data = new FormData()
+            form_data.append("csrfmiddlewaretoken", '{{csrf_token}}')
+            form_data.append("data", data)
+
+            axios.post('/schemas/schema-create/', form_data) 
+                // .then(res => window.location = "/schemas/schema-list/") 
+                .then(res => console.log(res))
+                .catch(errors => console.log(errors)) 
         }
-       
-
-        // let form = document.getElementById('redirect'); // selecting the form
-        
-        // console.log("added listener")
-        // form.addEventListener('submit', function (event) { // 1
-        //     event.preventDefault()
-        //     let data = new FormData(); // 2
-
-        //     data.append("title", "{'helo': 'hi there'}")
-        //     data.append("csrfmiddlewaretoken", '{{csrf_token}}')
-
-        //     axios.post('/schemas/redirect/', data) // 4
-        //         .then(res => window.location = "/schemas/schema-list/") // 5
-        //         .catch(errors => console.log(errors)) // 6
-
-        // })
 
     </script>
 {% endblock javascript %}

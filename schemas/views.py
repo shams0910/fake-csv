@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from .forms import CreateSchemaForm, CreateSchemaColumnForm
 from .models import Schema, SchemaColumn, Dataset
 from schemas.tasks import generate_dataset_task
+import json
 
 
 # Create your views here.
@@ -20,26 +22,24 @@ class SchemaCreateView(LoginRequiredMixin, View):
     login_url = '/accounts/login/'
 
     def post(self, request):
-        schema_form = CreateSchemaForm(request.POST)
-        if schema_form.is_valid():
-            schema_id = request.POST.get('schema_id', False)
-            # saving schema
-            schema = schema_form.save(commit=False)
-            schema.user = request.user
-            schema.save()
+        data = request.POST.get('data')
+        data = json.loads(data)
 
-            column_form = CreateSchemaColumnForm()
+        columns = data.get('columns')
+        schema = data.get('schema')
+        print(columns)
+        # try:
+        #     schema = Schema.objects.create(**schema, user_id=request.user.id)
+        # except Exception as e:
+        #     return HttpResponse(f'{e}', status=400)
 
-            context = {
-                # 'schema_form': schema_form,
-                'submitted': True,
-                'schema_id': schema.id,
-                'column_form': column_form
-            }
+        # column_instances = []
+        # for column in columns:
+        #     instance = SchemaColumn(**column, schema_id=schema.id)
+        #     column_instances.append(instance)
 
-            return render(request, 'schemas/schema_create.html', context)
-        else:
-            return redirect('schemas:schema-list')
+        # SchemaColumn.objects.bulk_create(column_instances)
+        return HttpResponse('created', status=201)
 
     def get(self, request):
         context = {

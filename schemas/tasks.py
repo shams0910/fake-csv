@@ -11,9 +11,11 @@ def generate_dataset_task(dataset_id, row_amount):
     dataset_instance = Dataset.objects.get(id=dataset_id)
     schema_id = dataset_instance.schema_id
     print(schema_id)
-    # # schema_instance = Schema.objects.get(id=schema_id)
+
+    schema_instance = Schema.objects.get(id=schema_id)
+
     columns = SchemaColumn.objects.filter(
-        schema_id=schema_id).values_list('type', flat=True)
+        schema_id=schema_id).values()
     print(columns)
 
     # # generate rows
