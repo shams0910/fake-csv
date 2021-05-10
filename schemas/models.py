@@ -8,15 +8,14 @@ from .utils import user_directory_path
 class Schema(models.Model):
     SEPARATOR_CHOICES = (
         ('comma', 'Comma (,)'),
-        ('semicolon', 'Semicolon (;)'),
         ('tab', 'Tab (\\t)'),
-        ('space', 'Space ( )'),
         ('pipe', 'Pipe (|)')
     )
 
     STRING_CHARACTER_CHOICES = (
         (1, 'Single quote (\')'),
-        (2, 'Double quote(")')
+        (2, 'Double quote(")'),
+        (3, 'No quotes')
     )
 
     name = models.CharField(max_length=50)
@@ -36,8 +35,9 @@ class SchemaColumn(models.Model):
         ('name', 'Full name'),
         ('job', 'Job'),
         ('email', 'Email'),
-        ('domain', 'Domain name'),
-        ('phone', 'Phone number'),
+        ('address', 'Address'),
+        ('phone_number', 'Phone number'),
+        ('domain_name', 'Domain Name'),
         ('company', 'Company name'),
         ('text', 'Text')
     )

@@ -27,18 +27,17 @@ class SchemaCreateView(LoginRequiredMixin, View):
 
         columns = data.get('columns')
         schema = data.get('schema')
-        print(columns)
-        # try:
-        #     schema = Schema.objects.create(**schema, user_id=request.user.id)
-        # except Exception as e:
-        #     return HttpResponse(f'{e}', status=400)
+        try:
+            schema = Schema.objects.create(**schema, user_id=request.user.id)
+        except Exception as e:
+            return HttpResponse(f'{e}', status=400)
 
-        # column_instances = []
-        # for column in columns:
-        #     instance = SchemaColumn(**column, schema_id=schema.id)
-        #     column_instances.append(instance)
+        column_instances = []
+        for column in columns:
+            instance = SchemaColumn(**column, schema_id=schema.id)
+            column_instances.append(instance)
 
-        # SchemaColumn.objects.bulk_create(column_instances)
+        SchemaColumn.objects.bulk_create(column_instances)
         return HttpResponse('created', status=201)
 
     def get(self, request):

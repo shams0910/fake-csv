@@ -12,7 +12,11 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 # import django_heroku
 import os
 from pathlib import Path
-
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except:
+    print("running remotely")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,7 +31,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['fake-csv-demo.herokuapp.com']
+ALLOWED_HOSTS = ['fake-csv-demo.herokuapp.com', '127.0.0.1']
 
 
 # Application definition

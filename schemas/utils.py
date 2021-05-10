@@ -29,10 +29,32 @@ def generate_rows(amount, column_dicts):
                 fake_word = getattr(fake, column['type'])()
                 row.append(fake_word)
         rows.append(row)
-    print(rows)
     return rows
 
 
 def user_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'user_{0}/{1}'.format(instance.schema.user_id, filename)
+
+
+def get_writer_params(schema_instance):
+    options = {}
+    options['quoting'] = csv.QUOTE_NONNUMERIC
+
+    separator = schema_instance.column_separator
+    if separator == 'comma':
+        options['delimiter'] = ','
+    elif separator == 'tab':
+        options['delimiter'] = '\\t'
+    elif separator == 'pipe':
+        options['delimiter'] = '|'
+
+    string_character = schema_instance.string_character
+    if string_character == 1:
+        options['quotechar'] = '\''
+    elif string_character == 2:
+        options['quotechar'] = '"'
+    elif string_character == 3:
+        options['quoting'] = csv.QUOTE_MINIMAL
+
+    return options

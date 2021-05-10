@@ -18,7 +18,6 @@
   
         function atTypeChange(typeElement){
             var grandParentElement = typeElement.parentNode.parentNode;
-            console.log(grandParentElement.children[2]);
             wrapperOfToInput = grandParentElement.children[2]
             wrapperOfFromInput = grandParentElement.children[3]
             
@@ -43,10 +42,8 @@
         function getDataFromColumns(){
             let allColumnsData = []
             added_columns = added_columns_div.children
-            console.log(added_columns);
             for (let added_column of added_columns){
                 let columnData = {}
-                console.log(added_column)
                 for (let element of added_column.children){
                     // adds each input data to columnData
                     input = element.children[0]
@@ -67,10 +64,8 @@
                     }
                 }
                 // adding each column data to overall data of all columns
-                console.log(columnData);
                 allColumnsData.push(columnData)
             }
-            console.log(allColumnsData);
             return allColumnsData
         }
 
@@ -90,7 +85,7 @@
         }
         
         function submit(){
-            // let schema_object = getSchemaData()
+            let schema_object = getSchemaData()
             let columns = getDataFromColumns()
 
             if (!schema_object || !columns) {
@@ -102,14 +97,13 @@
             data['columns'] = columns
            
             data = JSON.stringify(data)
-
+            console.log(data);
             let form_data = new FormData()
             form_data.append("csrfmiddlewaretoken", '{{csrf_token}}')
             form_data.append("data", data)
 
             axios.post('/schemas/schema-create/', form_data) 
-                // .then(res => window.location = "/schemas/schema-list/") 
-                .then(res => console.log(res))
+                .then(res => window.location = "/schemas/schema-list/")
                 .catch(errors => console.log(errors)) 
         }
 
