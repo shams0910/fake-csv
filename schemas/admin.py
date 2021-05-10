@@ -5,3 +5,5 @@ from . import models
 admin.site.register(models.Schema)
 
 admin.site.register(models.SchemaColumn)
+
+admin.site.register(models.Dataset)
