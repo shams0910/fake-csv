@@ -14,7 +14,7 @@ class SchemaListView(LoginRequiredMixin, View):
     login_url = '/accounts/login/'
 
     def get(self, request):
-        schemas = Schema.objects.all()
+        schemas = Schema.objects.filter(user_id=request.user.id)
         return render(request, 'schemas/schema_list.html', {'schemas': schemas})
 
 
