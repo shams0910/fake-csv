@@ -149,11 +149,6 @@ MEDIA_ROOT = (
     os.path.join(BASE_DIR, 'media')
 )
 
-
-# Configure Django App for Heroku.
-# django_heroku.settings(locals())
-
-
 # Celery configs
 
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+CELERY_BROKER_URL = os.environ.get('REDISTOGO_URL')
