@@ -9,7 +9,6 @@ from time import sleep
 
 @shared_task
 def generate_dataset_task(dataset_id, row_amount):
-    print("received task")
     sleep(1)  # added sleep in order to see celery working
     dataset_instance = Dataset.objects.get(id=dataset_id)
     schema_id = dataset_instance.schema_id
@@ -31,4 +30,3 @@ def generate_dataset_task(dataset_id, row_amount):
 
     csv_file = ContentFile(csv_buffer.getvalue().encode('utf-8'))
     dataset_instance.file.save(f'dataset_{dataset_id}.csv', csv_file)
-    print("uploaded file")
