@@ -8,7 +8,7 @@ from .utils import user_directory_path
 class Schema(models.Model):
     SEPARATOR_CHOICES = (
         ('comma', 'Comma (,)'),
-        ('tab', 'Tab (\\t)'),
+        ('tab', 'Tab (\t)'),
         ('pipe', 'Pipe (|)')
     )
 
@@ -25,9 +25,6 @@ class Schema(models.Model):
         choices=STRING_CHARACTER_CHOICES)
     modified_date = models.DateField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    def get_modified(self):
-        return self.modified_date
 
 
 class SchemaColumn(models.Model):

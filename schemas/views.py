@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
+from django.db import transaction
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from .forms import CreateSchemaForm, CreateSchemaColumnForm
@@ -27,17 +28,23 @@ class SchemaCreateView(LoginRequiredMixin, View):
 
         columns = data.get('columns')
         schema = data.get('schema')
+
+        column_instances = []
+
         try:
-            schema = Schema.objects.create(**schema, user_id=request.user.id)
+            with transaction.atomic():
+                schema = Schema.objects.create(
+                    **schema, user_id=request.user.id)
+
+                for column in columns:
+                    instance = SchemaColumn(**column, schema_id=schema.id)
+                    column_instances.append(instance)
+
+                SchemaColumn.objects.bulk_create(column_instances)
+
         except Exception as e:
             return HttpResponse(f'{e}', status=400)
 
-        column_instances = []
-        for column in columns:
-            instance = SchemaColumn(**column, schema_id=schema.id)
-            column_instances.append(instance)
-
-        SchemaColumn.objects.bulk_create(column_instances)
         return HttpResponse('created', status=201)
 
     def get(self, request):

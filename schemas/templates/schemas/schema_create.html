@@ -1,162 +1,349 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block javascript %}
+<script src="https://unpkg.com/vue@3.0.0-rc.5/dist/vue.global.prod.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
 
+<script>
+  function toggleVisibility(element) {
+    value = element.value;
+    grantParentNode = element.parentNode.parentNode;
+    inputToWrapper = grantParentNode.children[2];
+    inputFromWrapper = grantParentNode.children[3];
+    if (value == "text") {
+      inputToWrapper.style.visibility = "visible";
+      inputFromWrapper.style.visibility = "visible";
+    } else {
+      inputFromWrapper.style.visibility = "hidden";
+      inputToWrapper.style.visibility = "hidden";
+    }
+  }
+  const app = Vue.createApp({
+    el: "#app",
+    delimiters: ["[[", "]]"],
+    data() {
+      return {
+        newSchema: {
+          name: "",
+          column_separator: "",
+          string_character: "",
+        },
+        newColumn: {
+          name: "",
+          type: "",
+          range_to: null,
+          range_from: null,
+          order: null,
+        },
+        typeOptions: [
+          {
+            value: "name",
+            text: "Full name",
+          },
+          {
+            value: "text",
+            text: "Text",
+          },
+          {
+            value: "job",
+            text: "Job",
+          },
+          {
+            value: "email",
+            text: "Email",
+          },
+        ],
+        separatorOptions: [
+          {
+            value: "comma",
+            text: "Comma (,)",
+          },
+          {
+            value: "tab",
+            text: `Tab (\t)`,
+          },
+          {
+            value: "pipe",
+            text: "Pipe (|)",
+          },
+        ],
+        stringCharacterOptions: [
+          {
+            value: 1,
+            text: "Single quote (')",
+          },
+          {
+            value: 2,
+            text: `Double quote(")`,
+          },
+          {
+            value: 3,
+            text: "No quotes",
+          },
+        ],
+        defaultColumn: {
+          name: "",
+          type: "",
+          range_to: null,
+          range_from: null,
+          order: null,
+        },
 
-{% block javascript %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
-    <script>
-        let added_columns_div = document.getElementById('added-columns')
-        let order = 0
-        let new_column_div = document.getElementById('new-column')
+        columns: [],
+        errors: [],
+      };
+    },
 
-        function removeColumn(el) {
-            var element = el.parentNode.parentNode;
-            if (element.id != 'new-column') {
-                element.remove()
-            }
+    computed: {},
+    methods: {
+      addNewColumn() {
+        validated = this.validateColumn(this.newColumn);
+        if (validated) {
+          this.columns.push(this.newColumn);
+          this.newColumn = Object.assign({}, this.defaultColumn);
         }
-  
-        function atTypeChange(typeElement){
-            var grandParentElement = typeElement.parentNode.parentNode;
-            wrapperOfToInput = grandParentElement.children[2]
-            wrapperOfFromInput = grandParentElement.children[3]
-            
-            if (typeElement.value == 'text' || typeElement.value == 'integer'){
-                wrapperOfToInput.style.visibility = "visible"
-                wrapperOfFromInput.style.visibility = "visible"
-            }
-            else{
-                wrapperOfToInput.style.visibility = "hidden"
-                wrapperOfFromInput.style.visibility = "hidden"
-            }
+      },
+
+      removeColumn(column) {
+        index = this.columns.indexOf(column);
+        this.columns.splice(index);
+      },
+
+      validateColumn(column) {
+        this.errors = [];
+        if (column.name.length > 30) {
+          this.errors.push("Name must be less than 30");
         }
-        
+        var isTextType = column["type"] == "text" ? true : false;
 
-        function addColumn(event){
-            column_div_to_add = new_column_div.cloneNode(true)
-            column_div_to_add.id = `column_${order}`
-            added_columns_div.appendChild(column_div_to_add)
-            order++
-        }
-
-        function getDataFromColumns(){
-            let allColumnsData = []
-            added_columns = added_columns_div.children
-            for (let added_column of added_columns){
-                let columnData = {}
-                for (let element of added_column.children){
-                    // adds each input data to columnData
-                    input = element.children[0]
-                    valueOfInput = input.value
-
-                    if (valueOfInput == undefined || input.name == 'range_from' || input.name == 'range_to'){
-                        // checking whether it is input or not
-                        continue
-                    }
-
-                    if (valueOfInput == ""){
-                        alert("Please fill all column forms")
-                        return false
-                    }
-
-                    else {
-                        columnData[`${input.name}`] = valueOfInput
-                    }
-                }
-                // adding each column data to overall data of all columns
-                allColumnsData.push(columnData)
+        for ([key, value] of Object.entries(column)) {
+          if (value == null || value == "") {
+            if (!isTextType & (key == "range_from" || key == "range_to")) {
+              continue;
             }
-            return allColumnsData
+            this.errors.push(`${key} is required`);
+          }
+        }
+        return this.errors.length == 0 ? true : false;
+      },
+
+      submit() {
+        var isSchemaValid = this.validateColumn(this.newSchema);
+        if (!isSchemaValid) {
+          return;
+        }
+        if (this.columns.length == 0) {
+          this.errors.push("Add at least one column");
+          return;
         }
 
-        function getSchemaData(){
-            schema_data = {}
-            let new_schema_div = document.getElementById('new-schema')
-            let input_wrappers = new_schema_div.children
-            for (let wrapper of input_wrappers){
-                input = wrapper.children[0]
-                if (input.value == ''){
-                    alert("Please fill up the schema form")
-                    return false
-                }
-                schema_data[`${input.name}`] = input.value
-            }
-            return schema_data
+        for (i in this.columns) {
+          validated = this.validateColumn(this.columns[i]);
+          if (!validated) {
+            return;
+          } else {
+            continue;
+          }
         }
-        
-        function submit(){
-            let schema_object = getSchemaData()
-            let columns = getDataFromColumns()
+        var formData = new FormData();
+        var data = {
+          schema: this.newSchema,
+          columns: this.columns,
+        };
+        data = JSON.stringify(data);
+        formData.append("data", data);
+        formData.append("csrfmiddlewaretoken", "{{csrf_token}}");
+        axios
+          .post("/schemas/schema-create/", formData)
+          .then(() => {
+            window.location = "/schemas/schema-list/";
+          })
+          .catch((err) => {
+            this.errors.push(err);
+          });
+      },
+    },
+  });
 
-            if (!schema_object || !columns) {
-                return
-            }
+  app.mount("#app");
+</script>
+{% endblock javascript %} {% block content %}
+<div class="d-flex flex-column m-5" id="app">
+  <!-- error alert block -->
+  <div
+    class="alert alert-danger d-flex flex-row justify-content-between"
+    v-if="errors.length"
+    role="alert"
+  >
+    <div>
+      <b>Please correct the following error(s): </b>
+      <span v-for="error in errors">[[error]] , </span>
+    </div>
+    <button class="btn-close m-2" @click="errors=[]"></button>
+  </div>
 
-            var data = {}
-            data['schema'] = schema_object
-            data['columns'] = columns
-           
-            data = JSON.stringify(data)
-            console.log(data);
-            let form_data = new FormData()
-            form_data.append("csrfmiddlewaretoken", '{{csrf_token}}')
-            form_data.append("data", data)
+  <!-- title block -->
+  <div class="d-flex flex-row justify-content-between">
+    <h3>New schema</h3>
+    <button class="btn btn-primary" @click="submit()">Submit</button>
+  </div>
 
-            axios.post('/schemas/schema-create/', form_data) 
-                .then(res => window.location = "/schemas/schema-list/")
-                .catch(errors => console.log(errors)) 
-        }
+  <!-- schema creation block -->
+  <div class="d-flex flex-column" style="max-width: 500px">
+    <div class="m-3">
+      <label class="form-label">Schema name</label>
+      <input type="text" v-model="newSchema.name" class="form-control" />
+    </div>
+    <div class="m-3">
+      <label class="form-label">Column separator</label>
+      <select class="form-select" v-model="newSchema.column_separator">
+        <option
+          v-for="option in separatorOptions"
+          :key="option.value"
+          :value="option.value"
+          :text="option.text"
+        ></option>
+      </select>
+    </div>
+    <div class="m-3">
+      <label class="form-label">String character</label>
+      <select class="form-select" v-model="newSchema.string_character">
+        <option
+          v-for="option in stringCharacterOptions"
+          :key="option.value"
+          :value="option.value"
+          :text="option.text"
+        ></option>
+      </select>
+    </div>
+  </div>
 
-    </script>
-{% endblock javascript %}
-    
+  <!-- columns blocks -->
+  <h3 class="mt-4 mb-4">Schema columns</h3>
+  <div class="d-flex flex-column">
+    <div id="added-columns" v-if="columns.length!=0">
+      <div
+        class="d-flex flex-row m-2"
+        v-for="column in columns"
+        :key="column.name"
+      >
+        <div class="m-3">
+          <label class="form-label">Column name</label>
+          <input type="text" v-model="column.name" class="form-control" />
+        </div>
+        <div class="m-3">
+          <label class="form-label">Type</label>
 
-{% block content %}
-<div class="d-flex flex-column m-5">
-
-    <!-- title block -->
-    <div class="d-flex flex-row justify-content-between">
-        <h3>New schema</h3>
-        <button class="btn btn-primary" onclick="submit()">Submit</button>
+          <select
+            class="form-select"
+            v-model="column.type"
+            onchange="toggleVisibility(this)"
+          >
+            <option
+              v-for="option in typeOptions"
+              :selected="option.value == column.type"
+              :key="option.value"
+              :value="option.value"
+              :text="option.text"
+            ></option>
+          </select>
+        </div>
+        <div class="m-3">
+          <label class="form-label">To</label>
+          <input
+            type="number"
+            v-model="column.range_to"
+            class="form-control"
+            style="width: 100px"
+          />
+        </div>
+        <div class="m-3">
+          <label class="form-label">From</label>
+          <input
+            type="number"
+            v-model="column.range_from"
+            class="form-control"
+          />
+        </div>
+        <div class="m-3">
+          <label class="form-label">Order</label>
+          <input type="number" v-model="column.order" class="form-control" />
+        </div>
+        <div class="d-flex align-items-center ms-2">
+          <span
+            data="delete-parent"
+            class="text-danger"
+            @click="removeColumn(column)"
+            >Delete</span
+          >
+        </div>
+      </div>
     </div>
 
-    <!-- schema block -->
-    <div class="d-flex flex-column" id="new-schema">
-        
-        {% for field in schema_form %}
-        <div class="my-2">
-            {{field.label}}
-            {{field}}
+    <!-- column creation block -->
+    <div class="d-flex flex-column border">
+      <div class="d-flex flex-row m-2" id="new-column">
+        <div class="m-3">
+          <label class="form-label">Column name</label>
+          <input type="text" v-model="newColumn.name" class="form-control" />
         </div>
-        {% endfor %}
-            
+        <div class="m-3">
+          <label class="form-label">Type</label>
+
+          <select
+            class="form-select"
+            v-model="newColumn.type"
+            onchange="toggleVisibility(this)"
+          >
+            <option
+              v-for="option in typeOptions"
+              :key="option.value"
+              :value="option.value"
+            >
+              [[option.text]]
+            </option>
+          </select>
+        </div>
+        <div class="m-3">
+          <label class="form-label">To</label>
+          <input
+            type="number"
+            v-model="newColumn.range_to"
+            class="form-control"
+            style="width: 100px"
+          />
+        </div>
+        <div class="m-3">
+          <label class="form-label">From</label>
+          <input
+            type="number"
+            v-model="newColumn.range_from"
+            class="form-control"
+            style="width: 100px"
+          />
+        </div>
+        <div class="m-3">
+          <label class="form-label">Order</label>
+          <input
+            type="number"
+            v-model="newColumn.order"
+            class="form-control"
+            style="width: 100px"
+          />
+        </div>
+        <div class="d-flex align-items-center ms-2">
+          <span data="delete-parent" class="text-danger">Delete</span>
+        </div>
+      </div>
+      <div class="ms-3 mb-3">
+        <button
+          id="add-column-button"
+          class="btn btn-primary"
+          @click="addNewColumn()"
+        >
+          Add column
+        </button>
+      </div>
     </div>
-
-    <!-- column blocks -->
-    <h3 class="mt-4 mb-4">Schema columns</h3>
-    <div class="d-flex flex-column">
-        <div id="added-columns">
-
-        </div>
-
-        <div class="d-flex flex-column border" >
-            <div class="d-flex flex-row m-2" id="new-column">
-                {% for field in column_form %}
-                    <div class="d-flex flex-column m-2">
-                        {{field.label}}
-                        {{field}}
-                    </div>
-                {% endfor %}
-                <div class="d-flex align-items-center ms-2" >
-                    <span data="delete-parent" class="text-danger" onclick="removeColumn(this)">Delete</span>
-                </div>
-            </div>
-            <div class="ms-3 mb-3">
-                <button id="add-column-button" class="btn btn-primary" onclick="addColumn()">Add column</button>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>
 
-
 {% endblock content %}
-    

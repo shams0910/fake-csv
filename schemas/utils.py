@@ -45,7 +45,7 @@ def get_writer_params(schema_instance):
     if separator == 'comma':
         options['delimiter'] = ','
     elif separator == 'tab':
-        options['delimiter'] = '\\t'
+        options['delimiter'] = '\t'
     elif separator == 'pipe':
         options['delimiter'] = '|'
 

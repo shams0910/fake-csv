@@ -29,7 +29,10 @@
           </td>
           <td>{{schema.modified_date}}</td>
           <td class="d-flex flex-row">
-            <form action="" method="get">
+            <form
+              action="{% url 'schemas:schema-edit' id=schema.id%}"
+              method="get"
+            >
               <input
                 type="submit"
                 class="btn btn-link text-decoration-none"
